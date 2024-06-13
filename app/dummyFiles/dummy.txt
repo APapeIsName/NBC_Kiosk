@@ -1,0 +1,85 @@
+// Menu String 변수
+val menu: Array<String> = arrayOf(
+    "Burgers",
+    "Frozen Custard",
+    "Drinks",
+    "Beer",
+    "종료",
+    )
+val menuDesc: Array<String> = arrayOf(
+    "맛있는 게살버거",
+    "자연산 우유로 만든 아이스크림",
+    "탄산음료",
+    "19세 이상 사용 가능",
+    "프로그램 종료",
+)
+// Menu 여백
+val menuSpace: IntArray = intArrayOf(9, 2, 10, 12, 13,)
+
+// Detail Menu String
+DetailMenuData(
+            "불고기 버거",
+            "4,700",
+            """두툼한 쇠고기패티와 한국적인
+                    | 맛의 소스가 잘 조화된 롯데리아 대표 버거""".trimMargin()
+        ),
+        DetailMenuData(
+            "모짜렐라 인 더 버거 베이컨",
+            "7,400",
+            """자연산 모짜렐라 치즈와 고소한 베이컨이 만나 풍부한 맛의 버거""".trimMargin()
+        ),
+        DetailMenuData(
+            "전주 비빔라이스 버거",
+            "6,900",
+            """전주비빔밥을 담은 라이스번과 노른자가
+                | 터지는 반숙란,달콤한 고추장 소스가 어우러진 새로운 라이스 버거""".trimMargin()
+        ),
+        DetailMenuData(
+            "오징어 얼라이브 버거(매운맛)",
+            "5,500",
+            """오징어가 살아있다! 오징어다리를 그대로 튀겨 낸
+                | 토핑과 쫄깃한 오징어패티로 극대화된 맛과 식감의 오징어버거""".trimMargin()
+        ),
+        )
+
+// 한글과 영어의 공백 차이 제거
+val whiteSpace = if( (menuNum- 1) == it ) 19 else 20
+print(" ".repeat(whiteSpace - menuData[it].name.length))
+println("|  ${menuData[it].description}")
+
+mainMenu[it].displayInfo()
+
+fun main() {
+    val menuNum: Int = mainMenu.size
+    var selectMenu = 0
+    while (true) {
+        when(selectMenu) {
+            0 -> printMenu(selectMenu, "롯데리아에 어서 오세요!")
+            1 -> printMenu(selectMenu, "버거 메뉴")
+            2 -> printMenu(selectMenu, "디저트 메뉴")
+            3 -> printMenu(selectMenu, "음료 메뉴")
+            4 -> printMenu(selectMenu, "아이스샷 메뉴")
+            else -> {
+                println("잘못된 값이 입력됐습니다. 다시 입력해주세요.")
+                continue
+            }
+        }
+        selectMenu = readln().trim().toInt()
+        println()
+    }
+}
+
+fun printMenu(menuNum: Int, title: String) {
+    val length: List<Int> = listOf(5, 4, 4, 4, 3)
+    println("[ $title ]")
+    repeat(length[menuNum]) {
+        print("${(it + 1) % length[menuNum]}. ")
+        if(menuNum == 0)
+            println("${mainMenu[it].name} | ${mainMenu[it].description}")
+        else println("${detailMenu[menuNum - 1][it].name}" +
+                " | ${detailMenu[menuNum - 1][it].price}" +
+                " | ${detailMenu[menuNum - 1][it].description}")
+    }
+    println()
+    print("메뉴 선택 : ")
+}
