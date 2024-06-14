@@ -45,65 +45,78 @@ val titles = arrayOf(
 fun main() {
     var nowMenu = 0
     while (true) {
-        // 타이틀
-        println("[ ${titles[nowMenu]} ]")
-        // 내용
-        when(nowMenu) {
-            0 -> mainMenuArr.forEachIndexed() { index, it ->
-                print("${index + 1}. ")
-                it.displayInfo()
-            }
-            1 -> burgerArr.forEachIndexed() { index, it ->
-                print("${index + 1}. ")
-                it.displayInfo()
-            }
-            2 -> dessertArr.forEachIndexed() { index, it ->
-                print("${index + 1}. ")
-                it.displayInfo()
-            }
-            3 -> drinkArr.forEachIndexed() { index, it ->
-                print("${index + 1}. ")
-                it.displayInfo()
-            }
-            4 -> iceCreamArr.forEachIndexed() { index, it ->
-                print("${index + 1}. ")
-                it.displayInfo()
-            }
-        }
-        // 종료, 돌아가기
-        if(nowMenu == 0) println("0. 종료하기 | 프로그램 종료")
-        else println("0. 돌아가기 | 돌아가기")
+        showMenu(nowMenu)
         println()
-        // 메뉴 고르는 곳
-        print("메뉴 선택 : ")
-        val selectMenu = readln().toInt()
-        // 메뉴 고른 거에 따른 동작
-        lateinit var selectedName: String
-        if (selectMenu != 0) {
-            when(nowMenu) {
-                0 ->
-                    {
-                        selectedName = mainMenuArr[selectMenu-1].name
-                        nowMenu = selectMenu
-                    }
-                1 -> selectedName = burgerArr[selectMenu-1].name
-                2 -> selectedName = dessertArr[selectMenu-1].name
-                3 -> selectedName = drinkArr[selectMenu-1].name
-                4 -> selectedName = iceCreamArr[selectMenu-1].name
-                else -> selectedName = "존재하지 않는"
-            }
-        }
-        else {
-            if(nowMenu == 0) {
-                println("종료합니다.")
-                break
-            }
-            else {
-                selectedName = "돌아가기"
-                nowMenu = 0
-            }
-        }
-        println("$selectedName 메뉴를 고르셨습니다.")
+        val selectMenu = selectMenu(nowMenu)
+        if(selectMenu == -1) break
         println()
+        selectMenuName(nowMenu, selectMenu)
+        if(nowMenu == 0 || selectMenu == 0) nowMenu = selectMenu
     }
+}
+
+fun showMenu(nowMenu: Int) {
+    // 타이틀
+    println("[ ${titles[nowMenu]} ]")
+    // 내용
+    when(nowMenu) {
+        0 -> mainMenuArr.forEachIndexed() { index, it ->
+            print("${index + 1}. ")
+            it.displayInfo()
+        }
+        1 -> burgerArr.forEachIndexed() { index, it ->
+            print("${index + 1}. ")
+            it.displayInfo()
+        }
+        2 -> dessertArr.forEachIndexed() { index, it ->
+            print("${index + 1}. ")
+            it.displayInfo()
+        }
+        3 -> drinkArr.forEachIndexed() { index, it ->
+            print("${index + 1}. ")
+            it.displayInfo()
+        }
+        4 -> iceCreamArr.forEachIndexed() { index, it ->
+            print("${index + 1}. ")
+            it.displayInfo()
+        }
+    }
+    // 종료, 돌아가기
+    if(nowMenu == 0) println("0. 종료하기 | 프로그램 종료")
+    else println("0. 돌아가기 | 돌아가기")
+}
+
+fun selectMenu(nowMenu: Int):Int {
+    // 메뉴 고르는 곳
+    print("메뉴 선택 : ")
+    val selectMenu = readln().toInt()
+    val returnNum: Int
+    if (selectMenu != 0) {
+        returnNum = selectMenu
+    }
+    else {
+        if(nowMenu == 0) {
+            println("종료합니다.")
+            returnNum = -1
+        }
+        else returnNum = 0
+    }
+    return returnNum
+}
+
+fun selectMenuName(nowMenu: Int, selectMenu: Int) {
+    // 메뉴 고른 거에 따른 동작
+    lateinit var selectedName: String
+    if (selectMenu != 0) {
+        selectedName = when(nowMenu) {
+            0 -> mainMenuArr[selectMenu-1].name
+            1 -> burgerArr[selectMenu-1].name
+            2 -> dessertArr[selectMenu-1].name
+            3 -> drinkArr[selectMenu-1].name
+            4 -> iceCreamArr[selectMenu-1].name
+            else -> "존재하지 않는"
+        }
+    }
+    else if(nowMenu != 0) selectedName = "돌아가기"
+    println("$selectedName 메뉴를 고르셨습니다.")
 }
