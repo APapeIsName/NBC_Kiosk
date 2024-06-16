@@ -36,27 +36,41 @@ val menuMap: Map<String, List<CorrectMenu>> =
 fun main() {
     var nowMenu: CorrectMenu = MainMenu()
     while (true) {
-        // 1.메뉴를 받아오면 그 메뉴의 내용을 전부 displayInfo()하는 함수 showMenu
-        // 2.그리고 다른 함수로 가서 입력받는 함수 - 입력받은 게 올바른지 확인 selectMenu
-        showMenu(nowMenu)
-        val selectNum = selectNum(nowMenu)
-        if(selectNum == -1) break
-        var selectedMenu: CorrectMenu = nowMenu
-        if(nowMenu is MainMenu)
-            selectedMenu = selectMenu(selectNum)
-        else if(nowMenu is Food) selectedMenu = selectFood(nowMenu, selectNum)
-        nowMenu = selectedMenu
+        try {
+            showMenu(nowMenu)
+            val selectNum = selectNum(nowMenu)
+            if(selectNum == -1) break
+            var selectedMenu: CorrectMenu = nowMenu
+            if(nowMenu is MainMenu)
+                selectedMenu = selectMenu(selectNum)
+            else if(nowMenu is Food) selectedMenu = selectFood(nowMenu, selectNum)
+            nowMenu = selectedMenu
+        } catch (e: NumberFormatException) {
+            println("숫자가 아닌 다른 문자를 입력하지 마십시오.\n")
+        } catch (e: IndexOutOfBoundsException) {
+            println("메뉴에 존재하지 않는 숫자를 입력하지 마십시오.\n")
+        }
+        catch (e: Exception) {
+            println("$e 알 수 없는 오류가 발생했습니다.")
+            nowMenu = MainMenu()
+            println("메인 화면에서 재시작합니다.\n")
+            continue
+        }
     }
 }
 
 fun showMenu(nowMenu: Menu) {
     // 타이틀
-    println(nowMenu.getTitle())
+    println("[ ${nowMenu.getTitle()} ]")
     // 내용
     val list = menuMap[nowMenu.toString()]!!
     repeat(list.size) {
         print("${it + 1}. ")
         list[it].displayInfo()
+    }
+    if(!Kiosk.isListEmpty() && nowMenu is MainMenu) {
+        println("\n[ 장바구니 ]")
+        println("5. 장바구니 확인 | 장바구니 확인")
     }
     // 종료, 돌아가기
     if(nowMenu is MainMenu) println("0. 종료하기 | 프로그램 종료")
@@ -67,15 +81,19 @@ fun showMenu(nowMenu: Menu) {
 fun selectNum(nowMenu: Menu):Int {
     // 메뉴 고르는 곳
     print("메뉴 선택 : ")
-    val selectNum = readln().toInt()
-    val returnNum: Int
-    if(nowMenu is MainMenu && selectNum == 0) {
-        println("종료합니다.")
-        returnNum = -1
+    try {
+        val selectNum = readln().toInt()
+        val returnNum: Int
+        if(nowMenu is MainMenu && selectNum == 0) {
+            println("종료합니다.")
+            returnNum = -1
+        }
+        else returnNum = selectNum
+        println()
+        return returnNum
+    } catch (e: Exception) {
+        throw e
     }
-    else returnNum = selectNum
-    println()
-    return returnNum
 }
 
 fun selectMenu(selectNum: Int): CorrectMenu {
@@ -85,18 +103,64 @@ fun selectMenu(selectNum: Int): CorrectMenu {
         2 -> Dessert()
         3 -> Drink()
         4 -> IceCream()
-        else -> MainMenu()
+        else -> {
+            if(selectNum == 5) {
+                println("장바구니 메뉴로 이동합니다.")
+                showOrderMenu()
+                selectOrder()
+            }
+            MainMenu()
+        }
     }
-    if(selectedMenu is Food) println("< $selectedMenu 메뉴로 이동합니다. >")
-    else println("잘못 입력했습니다.")
-    println()
-    return selectedMenu
+    try {
+        if(selectedMenu is Food) println("< $selectedMenu 메뉴로 이동합니다. >")
+        else if(selectNum == 5) println("메인 메뉴로 이동합니다.")
+        else throw IndexOutOfBoundsException()
+        println()
+        return selectedMenu
+    } catch (e: Exception) {
+        throw e
+    }
+}
+
+fun showOrderMenu() {
+    println("[ 주문 내역 ]")
+    Kiosk.getAllList()
+    println("[ 총 가격 ]")
+    println("${Kiosk.getTotalPrice()} 원")
+    println("1. 주문하기     2. 장바구니 비우기    0. 메뉴로 돌아가기")
+}
+
+fun selectOrder() {
+    print("값 입력 : ")
+    try {
+        val orderNum = readln().toInt()
+        when(orderNum) {
+            1 -> Consumer.useCash(Kiosk.getTotalPrice())
+            2 -> Kiosk.deleteAllList()
+        }
+    } catch (e: Exception) {
+        throw e
+    }
 }
 
 fun selectFood(nowMenu: Food, selectNum: Int): CorrectMenu {
     val returnMenu = if(selectNum == 0) return MainMenu() else nowMenu
     val menuList = menuMap[nowMenu.toString()]!!
-    println("${menuList[selectNum - 1].name}를 고르셨습니다.")
+    println("${menuList[selectNum - 1].name}를 고르시겠습니까?")
+    println("1. 확인    2. 취소")
     println()
+    try {
+        val validation = readln().toInt()
+        when(validation) {
+            1 -> {
+                Kiosk.addList(menuList[selectNum - 1] as Food)
+                println("${menuList[selectNum - 1].name} 메뉴를 추가했습니다.")
+            }
+            2 -> println("취소했습니다.")
+        }
+    } catch (e: Exception) {
+        throw e
+    }
     return returnMenu
 }
