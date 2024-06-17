@@ -1,5 +1,9 @@
 package com.study.nbc_kiosk
 
+import java.time.LocalDate
+import java.time.LocalDateTime
+import kotlin.concurrent.thread
+
 val menuMap: Map<String, List<CorrectMenu>> =
     mapOf(
         "MainMenu" to mutableListOf(
@@ -35,11 +39,21 @@ val menuMap: Map<String, List<CorrectMenu>> =
 
 fun main() {
     var nowMenu: CorrectMenu = MainMenu()
+    var waitingEnd = false
     while (true) {
+        thread {
+            while (!waitingEnd) {
+                Thread.sleep(5000)
+                println("\n현재 주문 대기수 : 5, 입력 : ")
+            }
+        }
         try {
             showMenu(nowMenu)
             val selectNum = selectNum(nowMenu)
-            if(selectNum == -1) break
+            if(selectNum == -1) {
+                waitingEnd = true
+                break
+            }
             var selectedMenu: CorrectMenu = nowMenu
             if(nowMenu is MainMenu)
                 selectedMenu = selectMenu(selectNum)
@@ -82,7 +96,7 @@ fun selectNum(nowMenu: Menu):Int {
     // 메뉴 고르는 곳
     print("메뉴 선택 : ")
     try {
-        val selectNum = readln().toInt()
+        val selectNum = readln().trim().toInt()
         val returnNum: Int
         if(nowMenu is MainMenu && selectNum == 0) {
             println("종료합니다.")
@@ -134,8 +148,24 @@ fun showOrderMenu() {
 fun selectOrder() {
     print("값 입력 : ")
     try {
-        val orderNum = readln().toInt()
-        when(orderNum) {
+        val orderNum = readln().trim().toInt()
+        val nowHour = LocalDateTime.now().toLocalTime().hour
+        val nowMin = LocalDateTime.now().toLocalTime().minute
+        val cannotHour = 10
+        val cannotMin = 50..55
+        println("현재 시각은 ${nowHour}시 ${nowMin}분입니다.")
+        println("결제가 진행 중입니다. 잠시만 기다려주십시오.")
+        repeat (9) {
+            print(".")
+            Thread.sleep(300)
+        }
+        println("완료!")
+        Thread.sleep(300)
+        if(nowHour == cannotHour && nowMin in cannotMin) {
+            println("현재 은행 점검시간입니다. (${cannotHour}시 ${cannotMin.first}분 ~ ${cannotHour}시 ${cannotMin.last})")
+            println("점검이 끝난 후에 다시 시도해주십시오. 결제가 취소됐습니다.")
+        }
+        else when(orderNum) {
             1 -> Consumer.useCash(Kiosk.getTotalPrice())
             2 -> Kiosk.deleteAllList()
         }
@@ -151,7 +181,7 @@ fun selectFood(nowMenu: Food, selectNum: Int): CorrectMenu {
     println("1. 확인    2. 취소")
     println()
     try {
-        val validation = readln().toInt()
+        val validation = readln().trim().toInt()
         when(validation) {
             1 -> {
                 Kiosk.addList(menuList[selectNum - 1] as Food)
