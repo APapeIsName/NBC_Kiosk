@@ -1,8 +1,11 @@
 package com.study.nbc_kiosk
 
-import java.time.LocalDate
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
-import kotlin.concurrent.thread
 
 val menuMap: Map<String, List<CorrectMenu>> =
     mapOf(
@@ -37,21 +40,17 @@ val menuMap: Map<String, List<CorrectMenu>> =
         ),
     )
 
+var waitingCoroutine = startWaitingCoroutine()
+var waiting = 3
+
 fun main() {
     var nowMenu: CorrectMenu = MainMenu()
-    var waitingEnd = false
     while (true) {
-        thread {
-            while (!waitingEnd) {
-                Thread.sleep(5000)
-                println("\n현재 주문 대기수 : 5, 입력 : ")
-            }
-        }
         try {
             showMenu(nowMenu)
             val selectNum = selectNum(nowMenu)
             if(selectNum == -1) {
-                waitingEnd = true
+                waitingCoroutine.cancel()
                 break
             }
             var selectedMenu: CorrectMenu = nowMenu
@@ -110,6 +109,7 @@ fun selectNum(nowMenu: Menu):Int {
     }
 }
 
+
 fun selectMenu(selectNum: Int): CorrectMenu {
     // 메뉴 고른 거에 따른 동작
     val selectedMenu: CorrectMenu = when(selectNum) {
@@ -153,6 +153,7 @@ fun selectOrder() {
         val nowMin = LocalDateTime.now().toLocalTime().minute
         val cannotHour = 10
         val cannotMin = 50..55
+        waitingCoroutine.cancel()
         println("현재 시각은 ${nowHour}시 ${nowMin}분입니다.")
         println("결제가 진행 중입니다. 잠시만 기다려주십시오.")
         repeat (9) {
@@ -166,11 +167,23 @@ fun selectOrder() {
             println("점검이 끝난 후에 다시 시도해주십시오. 결제가 취소됐습니다.")
         }
         else when(orderNum) {
-            1 -> Consumer.useCash(Kiosk.getTotalPrice())
+            1 -> {
+                Consumer.useCash(Kiosk.getTotalPrice())
+                waiting++
+            }
             2 -> Kiosk.deleteAllList()
         }
+        waitingCoroutine = startWaitingCoroutine()
     } catch (e: Exception) {
         throw e
+    }
+}
+
+@OptIn(DelicateCoroutinesApi::class)
+fun startWaitingCoroutine() = GlobalScope.launch(Dispatchers.IO) {
+    while (true) {
+        delay(5000)
+        println("\n현재 주문 대기수 : $waiting, 입력 : ")
     }
 }
 
